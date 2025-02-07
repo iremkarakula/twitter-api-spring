@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -33,12 +34,10 @@ public class User extends Identifier{
     @Size(max=15, message = "Kullanıcı adı en fazla 15 karakter olabilir")
     private String username;
 
-    //email validation
     @Column(name = "email", nullable = true, unique = true)
     @Size(max=320, message = "Email en fazla 320 karakter olabilir")
     private String email;
 
-    //phone validation
     @Column(name="phone_number", nullable = true, unique = true)
     @Size(min=10, max=10, message = "Telefon numarası 10 karakter olmalıdır")
     private String phoneNumber;
@@ -74,6 +73,12 @@ public class User extends Identifier{
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
     private Set<CommentLike> commentLikes;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_role", schema = "twitter",
+            joinColumns = @JoinColumn(name="user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private List<Role> roles;
 
 
 }
