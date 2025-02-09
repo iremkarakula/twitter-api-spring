@@ -9,11 +9,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 @AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
 @Entity
@@ -38,4 +39,10 @@ public class Tweet extends Identifier{
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "tweet")
     private List<Comment> comments;
+
+    public Tweet() {
+        this.likes = new HashSet<>();
+        this.reposts = new HashSet<>();
+        this.comments = new ArrayList<>();
+    }
 }

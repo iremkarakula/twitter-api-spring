@@ -19,6 +19,14 @@ public class GlobalExceptionHandler {
 
     }
 
+    @ExceptionHandler
+    public ResponseEntity<ErrorResponse> handleException(TweetException exception) {
+        ErrorResponse errorResponse = new ErrorResponse(exception.getHttpStatus().value(), exception.getMessage(), System.currentTimeMillis());
+        log.error("Tweet exception " + exception);
+        return new ResponseEntity<>(errorResponse, exception.getHttpStatus());
+
+    }
+
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleException(Exception exception) {

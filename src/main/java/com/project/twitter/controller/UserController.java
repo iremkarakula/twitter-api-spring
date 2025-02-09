@@ -14,6 +14,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+import java.util.Set;
 
 
 @RestController
@@ -60,5 +62,18 @@ public class UserController {
        }catch (ResponseStatusException e) {
            return new ResponseEntity<>(e.getReason(), e.getStatusCode());
        }
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Set<?>> searchUsersByInput(@RequestParam String input) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String authUsername = authentication.getName();
+
+        Set<GuestResponse> guestResponses = userService.searchUsersByInput(input);
+
+        guestResponses.removeIf(guestResponse -> guestResponse.getUsername().equals(authUsername));
+
+        return new ResponseEntity<>(guestResponses, HttpStatus.OK);
     }
 }

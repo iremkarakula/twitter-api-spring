@@ -8,6 +8,10 @@ import java.util.Set;
 
 public interface TweetService {
 
+    TweetResponse createTweet(String text, String username);
+    TweetResponse updateTweet(String text, long tweetId);
+    void deleteTweet(long tweetId);
+
     TweetResponse findTweetByTweetId(long tweetId);
     Set<TweetResponse> findAllTweets();
     Set<TweetResponse> findTweetsByUsername(String username);
@@ -20,9 +24,7 @@ public interface TweetService {
     List<TweetResponse> sortTweetsByEngagementDESC();
     List<TweetResponse> searchTweetByInput(String input);
 
-    TweetResponse createTweet(String text, String username);
-    TweetResponse updateTweet(String text, long tweetId);
-    void deleteTweet(long tweetId);
+
 
 
 }

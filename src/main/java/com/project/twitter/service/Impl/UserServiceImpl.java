@@ -7,26 +7,29 @@ import com.project.twitter.responses.GuestResponse;
 import com.project.twitter.responses.UserResponse;
 import com.project.twitter.service.UserService;
 import com.project.twitter.util.PhoneAndEmailValidation;
+import com.project.twitter.util.UserMapper;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 
 @AllArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
-    private UserRepository userRepository;
 
+    private UserRepository userRepository;
     private PhoneAndEmailValidation phoneAndEmailValidation;
+    private UserMapper userMapper;
 
     @Override
     public UserResponse getUser(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Kullanıcı bulunamadı"));
-        return new UserResponse(user.getName(), user.getUsername(),user.getBirthDate()
-                ,user.getRecordTime(),true, user.getEmail(), user.getPhoneNumber()
-                , user.getBio(),user.getWebsite(), user.getLocation());
+        return userMapper.toUserResponse(user);
 
     }
 
@@ -34,7 +37,7 @@ public class UserServiceImpl implements UserService {
     public GuestResponse getGuestUser(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Kullanıcı bulunamadı"));
-        return new GuestResponse(user.getName(),user.getUsername(), user.getRecordTime(),false);
+        return userMapper.toGuestResponse(user);
     }
 
     @Transactional
@@ -53,5 +56,12 @@ public class UserServiceImpl implements UserService {
         user.setLocation(request.getLocation());
 
         return userRepository.save(user);
+    }
+
+    @Override
+    public Set<GuestResponse> searchUsersByInput(String input) {
+        return userRepository.searchUsersByInput(input)
+                .stream().map(u -> userMapper.toGuestResponse(u))
+                .collect(Collectors.toSet());
     }
 }
