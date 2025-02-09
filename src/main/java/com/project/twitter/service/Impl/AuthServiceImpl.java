@@ -8,11 +8,13 @@ import com.project.twitter.requests.RegisterRequest;
 import com.project.twitter.service.AuthService;
 import com.project.twitter.service.RoleService;
 import com.project.twitter.util.PhoneAndEmailValidation;
-import jakarta.servlet.http.HttpSession;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,21 +26,20 @@ import java.util.Optional;
 @Service
 public class AuthServiceImpl implements AuthService {
 
-    @Autowired
+
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final UserRepository userRepository;
+    private final RoleService roleService;
+    private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private RoleService roleService;
-
+    @Transactional
     @Override
-    public void register(RegisterRequest request) {
+    public ResponseEntity<String> register(RegisterRequest request) {
         Optional<User> userOptional = userRepository.findByUsername(request.getUsername());
         if(userOptional.isPresent()){
-            throw new RuntimeException("Kullanıcı mevcut");
+            return new ResponseEntity<>("Kullanıcı adı kayıtlı", HttpStatus.CONFLICT);
         }
+
         User user = new User();
         user.setName(request.getName());
         user.setBirthDate(request.getBirthDate());
@@ -47,45 +48,50 @@ public class AuthServiceImpl implements AuthService {
         if(PhoneAndEmailValidation.isPhone(request.getContactInfo())){
             Optional<String> e = userRepository.isPhoneUnique(request.getContactInfo());
             if(e.isPresent()){
-                throw new IllegalArgumentException("Telefon numarası mevcut");
+                return new ResponseEntity<>("Telefon numarası kayıtlı", HttpStatus.BAD_REQUEST);
             }
             user.setPhoneNumber(request.getContactInfo());
         } else if(PhoneAndEmailValidation.isEmail(request.getContactInfo())){
             Optional<String> e = userRepository.isEmailUnique(request.getContactInfo());
             if(e.isPresent()){
-                throw new IllegalArgumentException("E-posta mevcut");
+                return new ResponseEntity<>("Eposta kayıtlı", HttpStatus.BAD_REQUEST);
             }
             user.setEmail(request.getContactInfo());
         } else {
-            throw new IllegalArgumentException("Geçerli email ya da telefon yok");
+            return new ResponseEntity<>("Geçerli bir eposta ya da telefon giriniz", HttpStatus.BAD_REQUEST);
         }
 
         user.setPassword(bCryptPasswordEncoder.encode(request.getPassword()));
         List<Role> roleList = new ArrayList<>();
         roleService.addUserRole(roleList);
         userRepository.save(user);
+
+        return new ResponseEntity<>("Kayıt oldunuz", HttpStatus.OK);
     }
 
+    @Transactional
     @Override
-    public void login(LoginRequest request, HttpSession session) {
-        Boolean isAuth = isAuthenticated(request.getUsername(), request.getPassword());
-        if(isAuth){
-            session.setAttribute("user", request.getUsername());
-            return;
+    public ResponseEntity<String> login(LoginRequest request) {
+        Optional<User> userOptional = userRepository.findByUsername(request.getUsername());
+        if (userOptional.isEmpty()) {
+            return new ResponseEntity<>("Kullanıcı bulunamadı", HttpStatus.UNAUTHORIZED);
         }
-        throw new RuntimeException("Giriş yapılamadı");
+
+        User user = userOptional.get();
+
+        if (!bCryptPasswordEncoder.matches(request.getPassword(), user.getPassword())) {
+            return new ResponseEntity<>("Şifre Hatalı", HttpStatus.UNAUTHORIZED);
+        }
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getUsername(),
+                        request.getPassword()
+                )
+        );
+
+        return new ResponseEntity<>("Giriş başarılı!", HttpStatus.OK);
     }
 
-    @Override
-    public Boolean isAuthenticated(String username, String password) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(()-> new UsernameNotFoundException("Kullanıcı bulunamadı"));
-        if(!user.getUsername().equals(username)){
-            throw new UsernameNotFoundException("Kullanıcı bulunamadı");
-        }
-        if(!bCryptPasswordEncoder.matches(password, user.getPassword())){
-            throw new BadCredentialsException("Parola yanlış");
-        }
-        return true;
-    }
+
 }

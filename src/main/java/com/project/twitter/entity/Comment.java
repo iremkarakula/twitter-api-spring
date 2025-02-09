@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
+import java.util.List;
 import java.util.Set;
 
 
@@ -39,4 +40,5 @@ public class Comment extends Identifier{
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "comment")
     private Set<CommentRepost> reposts;
+
 }

@@ -80,5 +80,17 @@ public class User extends Identifier{
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private List<Role> roles;
 
+    @Column(name = "bio", nullable = true)
+    @Size(max=160)
+    private String bio;
+
+    @Column(name = "website", nullable = true)
+    @Size(max=100)
+    private String website;
+
+    @Column(name = "location", nullable = true)
+    @Size(max=30)
+    private String location;
+
 
 }

@@ -1,14 +1,12 @@
 package com.project.twitter.service;
 
-import com.project.twitter.entity.User;
+
 import com.project.twitter.requests.LoginRequest;
 import com.project.twitter.requests.RegisterRequest;
-import jakarta.servlet.http.HttpSession;
+import org.springframework.http.ResponseEntity;
 
 public interface AuthService {
-    void register(RegisterRequest request);
-    void login(LoginRequest request, HttpSession session);
+    ResponseEntity<String> register(RegisterRequest request);
+    ResponseEntity<String> login(LoginRequest request);
 
-
-    Boolean isAuthenticated(String username, String password);
 }
