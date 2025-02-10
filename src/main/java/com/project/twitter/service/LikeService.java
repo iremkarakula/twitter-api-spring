@@ -2,10 +2,10 @@ package com.project.twitter.service;
 
 public interface LikeService {
 
-    boolean addTweetLike(long tweetId);
-    boolean removeTweetLike(long tweetId);
-    boolean addCommentLike(long commentId);
-    boolean removeCommentLike(long commentId);
+    void addTweetLike(long tweetId, String username);
+    void removeTweetLike(long tweetId, String username);
+    void addCommentLike(long commentId, String username);
+    void removeCommentLike(long commentId, String username);
     int getTweetLikeCount(long tweetId);
     int getCommentLikeCount(long commentId);
 
