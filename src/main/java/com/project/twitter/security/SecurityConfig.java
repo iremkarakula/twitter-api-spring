@@ -53,6 +53,8 @@ public class SecurityConfig {
 
     private final List<String> END_POINTS = List.of("http://localhost:5173");
     private final List<String> METHODS = List.of("GET", "POST", "PUT", "DELETE");
+
+
     @Bean
     CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration configuration = new CorsConfiguration();

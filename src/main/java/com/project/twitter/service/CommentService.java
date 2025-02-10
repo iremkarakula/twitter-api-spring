@@ -6,6 +6,10 @@ import java.util.List;
 
 public interface CommentService {
 
+    CommentResponse createComment(String text, String username, long tweetId);
+    CommentResponse updateComment(String text, long commentId);
+    void deleteComment(long commentId);
+
     CommentResponse findCommentByCommentId(long commentId);
     List<CommentResponse> findAllComments();
     List<CommentResponse> findCommentsByUsername(String username);
@@ -14,9 +18,6 @@ public interface CommentService {
     List<CommentResponse> sortCommentsByDateASC();
     List<CommentResponse> sortCommentsByDateDESC();
     List<CommentResponse> sortCommentsByLikeASC();
+    List<CommentResponse> sortCommentsByEngagementASC();
 
-
-    CommentResponse createComment(String text, String username);
-    CommentResponse updateComment(String text, long commentId);
-    void deleteComment(long commentId);
 }

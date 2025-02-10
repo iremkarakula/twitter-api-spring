@@ -2,21 +2,17 @@ package com.project.twitter.controller;
 
 import com.project.twitter.entity.Tweet;
 import com.project.twitter.exceptions.TweetException;
-import com.project.twitter.exceptions.UserException;
 import com.project.twitter.repository.TweetRepository;
+import com.project.twitter.requests.TweetRequest;
 import com.project.twitter.responses.TweetResponse;
 import com.project.twitter.service.TweetService;
+import com.project.twitter.util.AuthUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/tweet")
@@ -26,13 +22,13 @@ public class TweetController {
     private final TweetService tweetService;
     private final TweetRepository tweetRepository;
 
-    @PostMapping("/create/{username}")
-    public ResponseEntity<?> createTweet(@RequestBody String text, @PathVariable String username) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String authUsername = authentication.getName();
+    @PostMapping("/create")
+    public ResponseEntity<?> createTweet(@RequestBody TweetRequest request) {
 
-        if (authUsername.equals(username)) {
-            TweetResponse tweetResponse = tweetService.createTweet(text, username);
+        String authUsername = AuthUtil.getAuthenticatedUsername();
+
+        if (authUsername != null) {
+            TweetResponse tweetResponse = tweetService.createTweet(request.getText(), authUsername);
             return new ResponseEntity<>(tweetResponse, HttpStatus.CREATED);
         } else {
             return new ResponseEntity<>("Başkası için tweet atamazsın!", HttpStatus.FORBIDDEN);
@@ -41,16 +37,15 @@ public class TweetController {
 
 
     @PutMapping("/{tweetId}")
-    public ResponseEntity<?> updateTweet(@PathVariable long tweetId, @RequestBody String text) {
+    public ResponseEntity<?> updateTweet(@PathVariable long tweetId, @RequestBody TweetRequest request) {
 
         try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String authUsername = authentication.getName();
+            String authUsername = AuthUtil.getAuthenticatedUsername();
 
             Tweet tweet = tweetRepository.findById(tweetId).orElseThrow(()-> new TweetException("Tweet bulunamadı", HttpStatus.NOT_FOUND));
 
             if (authUsername.equals(tweet.getUser().getUsername())) {
-                TweetResponse tweetResponse = tweetService.updateTweet(text, tweetId);
+                TweetResponse tweetResponse = tweetService.updateTweet(request.getText(), tweetId);
                 return new ResponseEntity<>(tweetResponse, HttpStatus.OK);
             } else {
                 return new ResponseEntity<>("Başkasının tweetini güncelleyemezsin!", HttpStatus.FORBIDDEN);
@@ -65,8 +60,7 @@ public class TweetController {
     @DeleteMapping("/{tweetId}")
     public ResponseEntity<String> deleteTweet(@PathVariable long tweetId) {
        try {
-           Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-           String authUsername = authentication.getName();
+           String authUsername = AuthUtil.getAuthenticatedUsername();
 
            Tweet tweet = tweetRepository.findById(tweetId).orElseThrow(()-> new TweetException("Tweet bulunamadı", HttpStatus.NOT_FOUND));
 
@@ -90,15 +84,21 @@ public class TweetController {
 
 
     @GetMapping
-    public ResponseEntity<Set<TweetResponse>> findAllTweets() {
-        Set<TweetResponse> tweetResponses = tweetService.findAllTweets();
+    public ResponseEntity<List<TweetResponse>> findAllTweets() {
+        List<TweetResponse> tweetResponses = tweetService.findAllTweets().stream()
+                .sorted((x,y)-> y.getRecordTime().compareTo(x.getRecordTime()))
+                .toList();
         return new ResponseEntity<>(tweetResponses, HttpStatus.OK);
     }
 
 
-    @GetMapping("/user/{username}")
-    public ResponseEntity<Set<TweetResponse>> findTweetsByUsername(@PathVariable String username) {
-        Set<TweetResponse> tweetResponses = tweetService.findTweetsByUsername(username);
+    @GetMapping("/user")
+    public ResponseEntity<List<TweetResponse>> findTweetsByUsername() {
+        String authUsername = AuthUtil.getAuthenticatedUsername();
+        List<TweetResponse> tweetResponses = tweetService.findTweetsByUsername(authUsername)
+                .stream()
+                .sorted((x,y)-> y.getRecordTime().compareTo(x.getRecordTime()))
+                .toList();
         return new ResponseEntity<>(tweetResponses, HttpStatus.OK);
     }
 

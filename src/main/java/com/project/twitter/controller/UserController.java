@@ -5,15 +5,15 @@ import com.project.twitter.requests.UpdateUserRequest;
 import com.project.twitter.responses.GuestResponse;
 import com.project.twitter.responses.UserResponse;
 import com.project.twitter.service.UserService;
+import com.project.twitter.util.AuthUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -29,10 +29,9 @@ public class UserController {
     @GetMapping("/{username}")
     public ResponseEntity<?> getUserByUsername(@PathVariable String username) {
         try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String loggedInUsername = authentication.getName();
+            String authUsername = AuthUtil.getAuthenticatedUsername();
 
-            if (loggedInUsername.equals(username)) {
+            if (authUsername.equals(username)) {
                 UserResponse userResponse = userService.getUser(username);
                 return new ResponseEntity<>(userResponse, HttpStatus.OK);
             } else {
@@ -48,10 +47,9 @@ public class UserController {
 
 
     @PutMapping("/{username}")
-    public ResponseEntity<?> updateUser(@PathVariable String username, @RequestBody UpdateUserRequest request){
+    public ResponseEntity<String> updateUser(@PathVariable String username, @RequestBody UpdateUserRequest request){
        try{
-           Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-           String authUsername = authentication.getName();
+           String authUsername = AuthUtil.getAuthenticatedUsername();
 
            if (authUsername.equals(username)) {
                userService.updateUser(username, request);
@@ -65,15 +63,14 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Set<?>> searchUsersByInput(@RequestParam String input) {
+    public ResponseEntity<List<GuestResponse>> searchUsersByInput(@RequestParam String input) {
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String authUsername = authentication.getName();
+        String authUsername = AuthUtil.getAuthenticatedUsername();
 
         Set<GuestResponse> guestResponses = userService.searchUsersByInput(input);
 
         guestResponses.removeIf(guestResponse -> guestResponse.getUsername().equals(authUsername));
 
-        return new ResponseEntity<>(guestResponses, HttpStatus.OK);
+        return new ResponseEntity<>(new ArrayList<>(guestResponses), HttpStatus.OK);
     }
 }

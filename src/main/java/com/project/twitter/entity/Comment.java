@@ -9,12 +9,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 
 @AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
 @Entity
@@ -40,5 +41,11 @@ public class Comment extends Identifier{
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "comment")
     private Set<CommentRepost> reposts;
+
+    public Comment() {
+        this.likes = new HashSet<>();
+        this.reposts = new HashSet<>();
+    }
+
 
 }

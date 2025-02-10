@@ -7,11 +7,10 @@ import com.project.twitter.repository.TweetRepository;
 import com.project.twitter.repository.UserRepository;
 import com.project.twitter.responses.TweetResponse;
 import com.project.twitter.service.TweetService;
-import com.project.twitter.util.TweetMapper;
+import com.project.twitter.util.Mapper;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,7 +23,7 @@ public class TweetServiceImpl implements TweetService {
 
     private final UserRepository userRepository;
     private final TweetRepository tweetRepository;
-    private final TweetMapper tweetMapper;
+
 
     @Transactional
     @Override
@@ -39,7 +38,7 @@ public class TweetServiceImpl implements TweetService {
 
         Tweet savedTweet = tweetRepository.save(tweet);
 
-        return tweetMapper.toTweetResponse(savedTweet);
+        return Mapper.toTweetResponse(savedTweet);
     }
 
     @Transactional
@@ -48,7 +47,7 @@ public class TweetServiceImpl implements TweetService {
         Tweet tweet = tweetRepository.findById(tweetId).orElseThrow(()-> new TweetException("Tweet bulunamadı", HttpStatus.NOT_FOUND));
         tweet.setText(text);
         tweetRepository.save(tweet);
-        return tweetMapper.toTweetResponse(tweet);
+        return Mapper.toTweetResponse(tweet);
     }
 
     @Override
@@ -62,7 +61,7 @@ public class TweetServiceImpl implements TweetService {
     public TweetResponse findTweetByTweetId(long tweetId) {
         Tweet tweet = tweetRepository.findById(tweetId)
                 .orElseThrow(()-> new TweetException("Tweet bulunamadı", HttpStatus.NOT_FOUND));
-        return tweetMapper.toTweetResponse(tweet);
+        return Mapper.toTweetResponse(tweet);
     }
 
     @Override
@@ -70,7 +69,7 @@ public class TweetServiceImpl implements TweetService {
 
         return tweetRepository.findAll()
                 .stream()
-                .map(t -> tweetMapper.toTweetResponse(t))
+                .map(t -> Mapper.toTweetResponse(t))
                 .collect(Collectors.toSet());
     }
 
@@ -78,7 +77,7 @@ public class TweetServiceImpl implements TweetService {
     public Set<TweetResponse> findTweetsByUsername(String username) {
         return tweetRepository.findAllByUsername(username)
                 .stream()
-                .map(t-> tweetMapper.toTweetResponse(t))
+                .map(t-> Mapper.toTweetResponse(t))
                 .collect(Collectors.toSet());
 
     }
@@ -87,7 +86,7 @@ public class TweetServiceImpl implements TweetService {
     public List<TweetResponse> sortTweetsByDateASC() {
         return tweetRepository.sortTweetsByDateASC()
                 .stream()
-                .map(t-> tweetMapper.toTweetResponse(t))
+                .map(t-> Mapper.toTweetResponse(t))
                 .collect(Collectors.toList());
     }
 
@@ -95,7 +94,7 @@ public class TweetServiceImpl implements TweetService {
     public List<TweetResponse> sortTweetsByDateDESC() {
         return tweetRepository.sortTweetsByDateDESC()
                 .stream()
-                .map(t-> tweetMapper.toTweetResponse(t))
+                .map(t-> Mapper.toTweetResponse(t))
                 .collect(Collectors.toList());
     }
 
@@ -103,7 +102,7 @@ public class TweetServiceImpl implements TweetService {
     public List<TweetResponse> sortTweetsByCommentASC() {
         return tweetRepository.sortTweetsByCommentASC()
                 .stream()
-                .map(t-> tweetMapper.toTweetResponse(t))
+                .map(t-> Mapper.toTweetResponse(t))
                 .collect(Collectors.toList());
     }
 
@@ -111,7 +110,7 @@ public class TweetServiceImpl implements TweetService {
     public List<TweetResponse> sortTweetsByLikeASC() {
         return tweetRepository.sortTweetsByLikeASC()
                 .stream()
-                .map(t-> tweetMapper.toTweetResponse(t))
+                .map(t-> Mapper.toTweetResponse(t))
                 .collect(Collectors.toList());
     }
 
@@ -119,7 +118,7 @@ public class TweetServiceImpl implements TweetService {
     public List<TweetResponse> sortTweetsByEngagementASC() {
         return tweetRepository.sortTweetsByEngagementASC()
                 .stream()
-                .map(t-> tweetMapper.toTweetResponse(t))
+                .map(t-> Mapper.toTweetResponse(t))
                 .collect(Collectors.toList());
     }
 
@@ -127,7 +126,7 @@ public class TweetServiceImpl implements TweetService {
     public List<TweetResponse> sortTweetsByEngagementDESC() {
         return tweetRepository.sortTweetsByEngagementDESC()
                 .stream()
-                .map(t-> tweetMapper.toTweetResponse(t))
+                .map(t-> Mapper.toTweetResponse(t))
                 .collect(Collectors.toList());
     }
 
@@ -135,7 +134,7 @@ public class TweetServiceImpl implements TweetService {
     public List<TweetResponse> searchTweetByInput(String input) {
         return tweetRepository.searchTweetByInput(input)
                 .stream()
-                .map(t-> tweetMapper.toTweetResponse(t))
+                .map(t-> Mapper.toTweetResponse(t))
                 .collect(Collectors.toList());
     }
 }

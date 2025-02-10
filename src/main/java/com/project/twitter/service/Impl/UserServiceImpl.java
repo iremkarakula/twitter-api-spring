@@ -23,13 +23,13 @@ public class UserServiceImpl implements UserService {
 
     private UserRepository userRepository;
     private PhoneAndEmailValidation phoneAndEmailValidation;
-    private UserMapper userMapper;
+//    private UserMapper userMapper;
 
     @Override
     public UserResponse getUser(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Kullanıcı bulunamadı"));
-        return userMapper.toUserResponse(user);
+        return UserMapper.toUserResponse(user);
 
     }
 
@@ -37,7 +37,7 @@ public class UserServiceImpl implements UserService {
     public GuestResponse getGuestUser(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Kullanıcı bulunamadı"));
-        return userMapper.toGuestResponse(user);
+        return UserMapper.toGuestResponse(user);
     }
 
     @Transactional
@@ -61,7 +61,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Set<GuestResponse> searchUsersByInput(String input) {
         return userRepository.searchUsersByInput(input)
-                .stream().map(u -> userMapper.toGuestResponse(u))
+                .stream().map(u -> UserMapper.toGuestResponse(u))
                 .collect(Collectors.toSet());
     }
 }
