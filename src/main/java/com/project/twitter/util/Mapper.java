@@ -15,7 +15,7 @@ public class Mapper {
                 tweet.getText(),
                 tweet.getRecordTime(),
                 tweet.getComments().size(),
-                tweet.getLikes().size(),
+                tweet.getLikes().stream().map(l -> l.getUser().getUsername()).toList(),
                 tweet.getReposts().size()
         );
     }

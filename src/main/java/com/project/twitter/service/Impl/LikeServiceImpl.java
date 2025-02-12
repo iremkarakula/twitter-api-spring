@@ -27,6 +27,11 @@ public class LikeServiceImpl implements LikeService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserException("Kullanıcı bulunamadı", HttpStatus.NOT_FOUND));
 
+        TweetLike existingLike = tweetLikeRepository.findTweetLikeByTweetIdAndUsername(tweetId, username);
+        if (existingLike != null) {
+            throw new TweetException("Kullanıcı zaten bu tweeti beğenmiş", HttpStatus.BAD_REQUEST);
+        }
+
         TweetLike tweetLike = new TweetLike();
         tweetLike.setUser(user);
         tweetLike.setTweet(tweet);
@@ -40,9 +45,14 @@ public class LikeServiceImpl implements LikeService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserException("Kullanıcı bulunamadı", HttpStatus.NOT_FOUND));
 
-        TweetLike tweetLike = tweetLikeRepository.findTweetLikeByTweetIdAndUsername(tweetId, username);
-        tweetLikeRepository.delete(tweetLike);
 
+        TweetLike tweetLike = tweetLikeRepository.findTweetLikeByTweetIdAndUsername(tweetId, username);
+
+        if (tweetLike != null) {
+            tweetLikeRepository.delete(tweetLike);
+        } else {
+            throw new TweetException("Kullanıcı bu tweeti beğenmemiş", HttpStatus.BAD_REQUEST);
+        }
     }
 
     @Override

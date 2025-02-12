@@ -29,6 +29,6 @@ public interface TweetRepository extends JpaRepository<Tweet, Long> {
     @Query("SELECT t FROM Tweet t ORDER BY SIZE(t.likes) + SIZE(t.comments) + SIZE(t.reposts) DESC")
     List<Tweet> sortTweetsByEngagementDESC();
 
-    @Query("SELECT t FROM Tweet t WHERE t.text LIKE %:input%")
+    @Query("SELECT t FROM Tweet t WHERE LOWER(t.text) LIKE LOWER(CONCAT('%', :input, '%'))")
     List<Tweet> searchTweetByInput(String input);
 }
