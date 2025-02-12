@@ -23,7 +23,7 @@ public class TweetController {
     private final TweetRepository tweetRepository;
 
     @PostMapping("/create")
-    public ResponseEntity<?> createTweet(@RequestBody TweetRequest request) {
+    public ResponseEntity<TweetResponse> createTweet(@RequestBody TweetRequest request) {
 
         String authUsername = AuthUtil.getAuthenticatedUsername();
 
@@ -31,7 +31,7 @@ public class TweetController {
             TweetResponse tweetResponse = tweetService.createTweet(request.getText(), authUsername);
             return new ResponseEntity<>(tweetResponse, HttpStatus.CREATED);
         } else {
-            return new ResponseEntity<>("Başkası için tweet atamazsın!", HttpStatus.FORBIDDEN);
+            throw new TweetException("Başkası için tweet atamazsın!", HttpStatus.FORBIDDEN);
         }
     }
 
@@ -48,7 +48,7 @@ public class TweetController {
                 TweetResponse tweetResponse = tweetService.updateTweet(request.getText(), tweetId);
                 return new ResponseEntity<>(tweetResponse, HttpStatus.OK);
             } else {
-                return new ResponseEntity<>("Başkasının tweetini güncelleyemezsin!", HttpStatus.FORBIDDEN);
+                throw new TweetException("Başkasının tweetini güncelleyemezsin!", HttpStatus.FORBIDDEN);
             }
         } catch(TweetException e) {
             return new ResponseEntity<>(e.getMessage(), e.getHttpStatus());

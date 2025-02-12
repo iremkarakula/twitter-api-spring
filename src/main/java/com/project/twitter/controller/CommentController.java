@@ -3,6 +3,7 @@ package com.project.twitter.controller;
 
 import com.project.twitter.entity.Comment;
 import com.project.twitter.exceptions.CommentException;
+import com.project.twitter.exceptions.UserException;
 import com.project.twitter.repository.CommentRepository;
 import com.project.twitter.requests.CommentRequest;
 import com.project.twitter.responses.CommentResponse;
@@ -25,7 +26,7 @@ public class CommentController {
 
 
     @PostMapping("/create/{tweetId}")
-    public ResponseEntity<?> createComment(
+    public ResponseEntity<CommentResponse> createComment(
             @RequestBody CommentRequest request,
             @PathVariable long tweetId) {
 
@@ -34,7 +35,7 @@ public class CommentController {
         if (authUsername != null) {
             return new ResponseEntity<>(commentService.createComment(request.getText(), authUsername, tweetId), HttpStatus.CREATED);
         } else {
-            return new ResponseEntity<>("Başkası için yorum yapamazsın!", HttpStatus.FORBIDDEN);
+            throw  new UserException("Başkası için yorum yapamazsın!", HttpStatus.FORBIDDEN);
         }
     }
 
@@ -52,7 +53,7 @@ public class CommentController {
                 CommentResponse commentResponse = commentService.updateComment(request.getText(), commentId);
                 return new ResponseEntity<>(commentResponse, HttpStatus.OK);
             } else {
-                return new ResponseEntity<>("Başkasının yorumunu güncelleyemezsin!", HttpStatus.FORBIDDEN);
+                throw new CommentException("Başkasının yorumunu güncelleyemezsin!", HttpStatus.FORBIDDEN);
             }
         } catch(CommentException e) {
             return new ResponseEntity<>(e.getMessage(), e.getHttpStatus());
@@ -60,7 +61,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/delete/{commentId}")
-    public ResponseEntity<?> deleteComment(@PathVariable long commentId) {
+    public ResponseEntity<String> deleteComment(@PathVariable long commentId) {
         try {
             String authUsername = AuthUtil.getAuthenticatedUsername();
 

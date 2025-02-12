@@ -1,8 +1,10 @@
 package com.project.twitter.util;
 
 import com.project.twitter.entity.Comment;
+import com.project.twitter.entity.Repost;
 import com.project.twitter.entity.Tweet;
 import com.project.twitter.responses.CommentResponse;
+import com.project.twitter.responses.RepostResponse;
 import com.project.twitter.responses.TweetResponse;
 
 
@@ -31,6 +33,18 @@ public class Mapper {
                 comment.getRecordTime(),
                 comment.getLikes().size(),
                 comment.getReposts().size()
+        );
+    }
+
+    public static RepostResponse toRepostResponse(Repost repost){
+        TweetResponse tweetResponse = toTweetResponse(repost.getTweet());
+        return new RepostResponse(
+                repost.getId(),
+                repost.getUser().getName(),
+                repost.getUser().getUsername(),
+                repost.getText(),
+                tweetResponse,
+                repost.getRecordTime()
         );
     }
 }

@@ -1,6 +1,7 @@
 package com.project.twitter.controller;
 
 
+import com.project.twitter.exceptions.UserException;
 import com.project.twitter.requests.UpdateUserRequest;
 import com.project.twitter.responses.GuestResponse;
 import com.project.twitter.responses.UserResponse;
@@ -39,7 +40,7 @@ public class UserController {
                 return new ResponseEntity<>(guestResponse, HttpStatus.OK);
             }
         } catch (UsernameNotFoundException e) {
-            return new ResponseEntity<>("Kullanıcı bulunamadı", HttpStatus.NOT_FOUND);
+            throw new UserException("Kullanıcı bulunamadı", HttpStatus.NOT_FOUND);
         }
     }
 
